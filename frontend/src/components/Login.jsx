@@ -37,8 +37,11 @@ export default function Login() {
         <button type="submit" disabled={loading}>{loading ? 'Logging...' : 'Login'}</button>
         {error && <div className="error">{error}</div>}
         {token && <div className="success">Logged in</div>}
-        <div style={{marginTop:10}}>
+        <div style={{ marginTop: 10 }}>
           Chưa có tài khoản? <Link to="/register">Đăng ký</Link>
+        </div>
+        <div style={{ marginTop: 5 }}>
+          <Link to="/forgot-password">Quên mật khẩu?</Link>
         </div>
       </form>
     </div>

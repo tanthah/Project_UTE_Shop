@@ -32,14 +32,14 @@ async function start() {
     }
 
     await mongoose.connect(uri)
-    console.log('✅ Đã kết nối MongoDB')
+    console.log('Đã kết nối MongoDB')
 
     app.listen(PORT, () => {
-      console.log(`🚀 Server đang chạy tại http://localhost:${PORT}`)
-      console.log(`🌐 API Base URL: http://localhost:${PORT}/api`)
+      console.log(`Server đang chạy tại http://localhost:${PORT}`)
+      console.log(`API Base URL: http://localhost:${PORT}/api`)
     })
   } catch (err) {
-    console.error('❌ Lỗi khi khởi động server:', err)
+    console.error('Lỗi khi khởi động server:', err)
     process.exit(1)
   }
 }
