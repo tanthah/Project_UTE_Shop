@@ -6,7 +6,8 @@ import { Container, Form, Button, Alert, Card } from 'react-bootstrap'
 import { 
   validateLoginForm, 
   sanitizeInput,  
-  validateEmail } 
+  validateEmail,
+  validatePassword } 
   from '../utils/validation'
 
 export default function Login() {
