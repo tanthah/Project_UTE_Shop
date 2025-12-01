@@ -1,14 +1,15 @@
+// frontend/src/pages/ReviewProfile.jsx
 import React, { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { Link } from 'react-router-dom'
-import { Container, Card, Button, Row, Col, Image } from 'react-bootstrap'
+import { Container, Card, Button, Row, Col, Image, Alert } from 'react-bootstrap'
 import { logout } from '../redux/authSlice'
 import { fetchUserProfile } from '../redux/editUserSlice'
 
-export default function Dashboard() {
+export default function ReviewProfile() {
   const dispatch = useDispatch()
   const authUser = useSelector((s) => s.auth.user)
-  const { user } = useSelector((s) => s.editUser)
+  const { user, loading, error } = useSelector((s) => s.editUser)
 
   useEffect(() => {
     dispatch(fetchUserProfile())
@@ -16,6 +17,39 @@ export default function Dashboard() {
 
   const handleLogout = () => {
     dispatch(logout())
+  }
+
+  // Helper function để get correct avatar URL - CHỈ CLOUDINARY
+  const getAvatarUrl = () => {
+    if (!user?.avatar) {
+      console.log('⚠️ No avatar found, using placeholder');
+      return 'https://via.placeholder.com/120?text=Avatar';
+    }
+    
+    // CHỈ chấp nhận Cloudinary URL
+    if (user.avatar.includes('cloudinary.com')) {
+      console.log('✅ Using Cloudinary avatar:', user.avatar);
+      return user.avatar;
+    }
+    
+    // Nếu không phải Cloudinary URL, dùng placeholder
+    //console.warn('⚠️ Avatar URL không phải Cloudinary:', user.avatar);
+    //return 'https://via.placeholder.com/120?text=Avatar';
+  };
+
+  const handleImageError = (e) => {
+    console.error('❌ Avatar load failed, using placeholder');
+    e.target.src = 'https://via.placeholder.com/120?text=Avatar';
+  };
+
+  if (loading) {
+    return (
+      <Container className="py-5 text-center">
+        <div className="spinner-border text-primary" role="status">
+          <span className="visually-hidden">Đang tải...</span>
+        </div>
+      </Container>
+    );
   }
 
   return (
@@ -38,16 +72,25 @@ export default function Dashboard() {
             <Card.Body className="p-4">
               <div className="text-center mb-4">
                 <Image
-                  src={user?.avatar ? `http://localhost:4000${user.avatar}` : 'https://via.placeholder.com/120?text=Avatar'}
+                  src={getAvatarUrl()}
                   roundedCircle
-                  style={{
-                    width: '120px',
-                    height: '120px',
+                  style={{ 
+                    width: '200px', 
+                    height: '200px', 
                     objectFit: 'cover',
                     border: '4px solid #0d6efd',
                     boxShadow: '0 4px 8px rgba(0,0,0,0.2)'
                   }}
+                  onError={handleImageError}
                 />
+                {user?.avatar && !user.avatar.includes('cloudinary.com') && (
+                  <div className="mt-2">
+                    <small className="text-warning">
+                      <i className="bi bi-exclamation-triangle me-1"></i>
+                      Avatar chưa được upload lên Cloudinary
+                    </small>
+                  </div>
+                )}
               </div>
 
               <h4 className="text-center mb-4">

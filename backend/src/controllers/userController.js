@@ -1,12 +1,11 @@
+// backend/src/controllers/userController.js
 import User from '../models/User.js';
-import jwt from 'jsonwebtoken';
-import fs from 'fs';
-import path from 'path';
+import { deleteFromCloudinary, extractPublicId } from '../utils/cloudinary.js';
 
 // Get user profile
 export const getUserProfile = async (req, res) => {
   try {
-    const userId = req.user.id; // From JWT middleware
+    const userId = req.user.id;
     
     const user = await User.findById(userId).select('-password');
     
@@ -108,7 +107,7 @@ export const updateUserProfile = async (req, res) => {
   }
 };
 
-// Upload avatar
+// Upload avatar - Cloudinary version
 export const uploadAvatar = async (req, res) => {
   try {
     const userId = req.user.id;
@@ -123,21 +122,22 @@ export const uploadAvatar = async (req, res) => {
     // Get current user to delete old avatar
     const currentUser = await User.findById(userId);
     
-    // Delete old avatar file if exists
+    // Delete old avatar from Cloudinary if exists
     if (currentUser.avatar) {
-      const oldAvatarPath = path.join(process.cwd(), currentUser.avatar);
-      if (fs.existsSync(oldAvatarPath)) {
-        try {
-          fs.unlinkSync(oldAvatarPath);
-          console.log('Old avatar deleted:', oldAvatarPath);
-        } catch (err) {
-          console.error('Error deleting old avatar:', err);
+      try {
+        const publicId = extractPublicId(currentUser.avatar);
+        if (publicId) {
+          await deleteFromCloudinary(publicId);
+          console.log('Old avatar deleted from Cloudinary');
         }
+      } catch (err) {
+        console.error('Error deleting old avatar:', err);
+        // Continue even if deletion fails
       }
     }
 
-    // File validation already done by multer middleware
-    const avatarUrl = `/uploads/avatars/${req.file.filename}`;
+    // Cloudinary automatically uploads the file, URL is in req.file.path
+    const avatarUrl = req.file.path;
 
     const updatedUser = await User.findByIdAndUpdate(
       userId,
@@ -152,6 +152,7 @@ export const uploadAvatar = async (req, res) => {
       avatar: avatarUrl
     });
   } catch (error) {
+    console.error('Upload avatar error:', error);
     res.status(500).json({
       success: false,
       message: 'Lỗi server',

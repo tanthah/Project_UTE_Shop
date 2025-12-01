@@ -1,3 +1,4 @@
+// frontend/src/pages/EditProfile.jsx
 import React, { useState, useEffect, useRef } from 'react';
 import { Container, Form, Button, Alert, Card, Row, Col, Image, Spinner } from 'react-bootstrap';
 import { useDispatch, useSelector } from 'react-redux';
@@ -54,9 +55,12 @@ const EditProfile = () => {
         gender: user.gender || 'other'
       });
       
-      // Set avatar preview with backend URL
+      // Set avatar preview - Kiểm tra xem URL đã là Cloudinary hay local
       if (user.avatar) {
-        setAvatarPreview(`http://localhost:4000${user.avatar}`);
+        // Nếu là Cloudinary URL (bắt đầu với http/https)
+        if (user.avatar.startsWith('http')) {
+          setAvatarPreview(user.avatar);
+        } 
       }
     }
   }, [user]);
@@ -75,23 +79,18 @@ const EditProfile = () => {
   const validateForm = () => {
     const errors = {};
     
-    // Validate name
     const nameError = validateName(formData.name);
     if (nameError) errors.name = nameError;
     
-    // Validate email
     const emailError = validateEmail(formData.email);
     if (emailError) errors.email = emailError;
     
-    // Validate phone (optional field)
     const phoneError = validatePhone(formData.phone);
     if (phoneError) errors.phone = phoneError;
     
-    // Validate date of birth (optional field)
     const dobError = validateDateOfBirth(formData.dateOfBirth);
     if (dobError) errors.dateOfBirth = dobError;
     
-    // Validate gender
     const genderError = validateGender(formData.gender);
     if (genderError) errors.gender = genderError;
     
@@ -99,7 +98,6 @@ const EditProfile = () => {
     return Object.keys(errors).length === 0;
   };
 
-  // Validate individual field on change
   const validateField = (name, value) => {
     let error = '';
     
@@ -134,7 +132,6 @@ const EditProfile = () => {
       [name]: value
     }));
     
-    // Real-time validation
     const fieldError = validateField(name, value);
     setFormErrors(prev => ({
       ...prev,
@@ -149,26 +146,29 @@ const EditProfile = () => {
   const handleAvatarChange = async (e) => {
     const file = e.target.files[0];
     if (file) {
-      // Validate file using imported validation function
       const fileError = validateImageFile(file);
       if (fileError) {
         alert(fileError);
         return;
       }
 
-      // Preview image
+      // Preview image locally
       const reader = new FileReader();
       reader.onloadend = () => {
         setAvatarPreview(reader.result);
       };
       reader.readAsDataURL(file);
 
-      // Upload image
+      // Upload to Cloudinary via backend
       const formDataUpload = new FormData();
       formDataUpload.append('avatar', file);
       
       try {
-        await dispatch(uploadAvatar(formDataUpload)).unwrap();
+        const result = await dispatch(uploadAvatar(formDataUpload)).unwrap();
+        // Backend trả về Cloudinary URL trong result.avatar
+        if (result.avatar) {
+          setAvatarPreview(result.avatar);
+        }
       } catch (err) {
         console.error('Upload failed:', err);
       }
@@ -178,13 +178,11 @@ const EditProfile = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Validate form before submitting
     if (!validateForm()) {
       return;
     }
 
     try {
-      // Sanitize form data before sending
       const sanitizedData = sanitizeFormData(formData);
       await dispatch(updateUserProfile(sanitizedData)).unwrap();
     } catch (err) {
@@ -249,8 +247,8 @@ const EditProfile = () => {
                       src={avatarPreview || 'https://via.placeholder.com/150?text=Avatar'}
                       roundedCircle
                       style={{ 
-                        width: '150px', 
-                        height: '150px', 
+                        width: '200px', 
+                        height: '200px', 
                         objectFit: 'cover',
                         border: '4px solid #0d6efd',
                         boxShadow: '0 4px 8px rgba(0,0,0,0.2)'

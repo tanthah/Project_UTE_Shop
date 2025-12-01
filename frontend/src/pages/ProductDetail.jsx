@@ -9,7 +9,7 @@ import 'swiper/css'
 import 'swiper/css/navigation'
 import 'swiper/css/pagination'
 import 'swiper/css/thumbs'
-import './ProductDetail.css'
+import './css/ProductDetail.css'
 
 export default function ProductDetail() {
     const { id } = useParams()
