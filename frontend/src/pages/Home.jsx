@@ -142,7 +142,7 @@ export default function Home() {
             icon="bi bi-fire"
             products={bestSellers}
             loading={loading}
-            columns={3}
+            columns={4}
           />
 
           {/* 3. Sản phẩm xem nhiều */}
@@ -194,9 +194,9 @@ export default function Home() {
                 </p>
                 <div className="newsletter-form">
                   <div className="input-group">
-                    <input 
-                      type="email" 
-                      className="form-control form-control-lg" 
+                    <input
+                      type="email"
+                      className="form-control form-control-lg"
                       placeholder="Nhập email của bạn..."
                     />
                     <button className="btn btn-primary btn-lg px-4">
